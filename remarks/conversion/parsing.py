@@ -1,11 +1,14 @@
 import logging
 import math
 import struct
+from enum import Enum
+from pprint import pprint
 from typing import Dict, List, Any, TypedDict, Tuple
 
 import shapely.geometry as geom  # Shapely
-from rmscene import read_blocks, SceneTree, build_tree
-from rmscene.scene_items import Line, GlyphRange, Rectangle
+from rmscene import read_blocks, SceneTree, build_tree, RootTextBlock, LwwValue
+from rmscene.scene_items import Line, GlyphRange, Rectangle, ParagraphStyle, END_MARKER
+from rmscene.text import TextDocument
 
 from ..utils import (
     RM_WIDTH,
@@ -124,21 +127,49 @@ class TLayer(TypedDict):
     rectangles: List[TRemarksRectangle]
 
 
+class TTextBlock(TypedDict):
+    pos_x: float
+    pos_y: float
+    width: float
+    text: TextDocument
+
+
 class TLayers(TypedDict):
     layers: List[TLayer]
     highlights: List[str]
+    text: TTextBlock | None
+
+
+class TextStyles(Enum):
+    BOLD_OPEN = 1
+    BOLD_CLOSE = 2
+    ITALIC_OPEN = 3
+    ITALIC_CLOSE = 4
 
 
 def parse_v6(file_path: str) -> Tuple[TLayers, bool]:
-    output: TLayers = {"layers": [{"strokes": {}, "rectangles": []}], "highlights": []}
+    output: TLayers = {
+        "layers": [{"strokes": {}, "rectangles": []}],
+        "highlights": [],
+        "text": None,
+    }
 
     dims = determine_document_dimensions(file_path)
 
     with open(file_path, "rb") as f:
         tree = SceneTree()
-        blocks = read_blocks(f)
+        blocks = [b for b in read_blocks(f)]
         build_tree(tree, blocks)
+
         try:
+            for block in blocks:
+                if isinstance(block, RootTextBlock):
+                    output["text"] = {
+                        "pos_x": block.value.pos_x,
+                        "pos_y": block.value.pos_y,
+                        "width": block.value.width,
+                        "text": TextDocument.from_scene_item(tree.root_text),
+                    }
             for el in tree.walk():
                 if isinstance(el, GlyphRange):
                     layer = output["layers"][0]
@@ -171,6 +202,29 @@ def parse_v6(file_path: str) -> Tuple[TLayers, bool]:
             print("ReMarkable broken data")
 
     return output, False
+
+
+class UnexpectedTextStylingException(Exception):
+    pass
+
+
+def style_text(bold: bool, italic: bool, value: int) -> Tuple[bool, bool]:
+    """
+    1 = <b>
+    2 = </b>
+    3 = <i>
+    4 = </i>
+    """
+    if value == TextStyles.BOLD_OPEN.value:
+        return True, italic
+    elif value == TextStyles.BOLD_CLOSE.value:
+        return False, italic
+    elif value == TextStyles.ITALIC_OPEN.value:
+        return bold, True
+    elif value == TextStyles.ITALIC_CLOSE.value:
+        return bold, False
+    else:
+        raise UnexpectedTextStylingException(f"Unexpected text style value: {value}")
 
 
 def roundup(num, increment):
@@ -283,7 +337,7 @@ def parse_rm_file(file_path: str, dims=None) -> Tuple[Tuple[TLayers, bool], str]
 
 
 def parse_v3_to_v5(data, dims: ReMarkableDimensions, is_v3, nlayers, offset):
-    output: TLayers = {"layers": [], "highlights": []}
+    output: TLayers = {"layers": [], "highlights": [], "text": []}
     has_highlighter = False
     for _ in range(nlayers):
         fmt = "<I"
@@ -348,6 +402,10 @@ def rescale_parsed_data(
                             f"{float(point[0]) * scale + offset_x:.3f}",
                             f"{float(point[1]) * scale + offset_y:.3f}",
                         )
+
+    if "text" in parsed_data:
+        parsed_data["text"]["pos_x"] = parsed_data["text"]["pos_x"] + offset_x
+        parsed_data["text"]["pos_y"] = parsed_data["text"]["pos_y"] + offset_y
 
     for layer in parsed_data["layers"]:
         for rmRectangles in layer["rectangles"]:

@@ -1,9 +1,12 @@
 import logging
+from pprint import pprint
 
 import fitz  # PyMuPDF
 import shapely.geometry as geom  # Shapely
+from rmscene.scene_items import ParagraphStyle
+from rmscene.text import TextDocument, BoldSpan, ItalicSpan, TextSpan, CrdtStr
 
-from .parsing import TLayers
+from .parsing import TLayers, TTextBlock
 from ..utils import (
     RM_WIDTH,
     RM_HEIGHT,
@@ -130,8 +133,78 @@ def prepare_segments(data: TLayers):
     return segs
 
 
-def draw_annotations_on_pdf(data, page, inplace=False):
+def draw_annotations_on_pdf(data: TLayers, page, inplace=False):
     segments = prepare_segments(data)
+
+    # TODO class: ReMarkable text writer
+    plain_writer = fitz.TextWriter(page.rect)
+    plain_font = fitz.Font("helv")
+    italic_font = fitz.Font("helvetica-oblique", is_italic=True)
+    bold_font = fitz.Font("helvetica-bold", is_bold=True)
+    bold_italic_font = fitz.Font(
+        "helvetica-boldoblique",
+        is_bold=True,
+        is_italic=True,
+    )
+
+    def visit_span(
+        span: TextSpan,
+        last_point: fitz.Point,
+        font_size=11,
+        bold: bool = False,
+        italic: bool = False,
+    ):
+        if isinstance(span, CrdtStr):
+            font = plain_font
+            if bold and italic:
+                font = bold_italic_font
+            elif bold:
+                font = bold_font
+            elif italic:
+                font = italic_font
+            _, last_point = plain_writer.append(
+                last_point, str(span), font=font, fontsize=font_size
+            )
+            return last_point
+        else:
+            for inner_span in span.contents:
+                if isinstance(span, BoldSpan):
+                    last_point = visit_span(
+                        inner_span, last_point, font_size, True, italic
+                    )
+                elif isinstance(span, ItalicSpan):
+                    last_point = visit_span(
+                        inner_span, last_point, font_size, bold, True
+                    )
+                else:
+                    last_point = visit_span(
+                        inner_span, last_point, font_size, bold, italic
+                    )
+            return last_point
+
+    if data["text"]:
+        text_block: TTextBlock = data["text"]
+        cursor = fitz.Point(text_block["pos_x"], text_block["pos_y"])
+
+        for paragraph in text_block["text"].contents:
+            if len(str(paragraph)) > 0:
+                if paragraph.style.value == ParagraphStyle.BOLD:
+                    cursor = fitz.Point(234, cursor.y + 13 * 2)
+                elif paragraph.style.value == ParagraphStyle.HEADING:
+                    cursor = fitz.Point(234, cursor.y + 22 * 2)
+                else:
+                    cursor = fitz.Point(234, cursor.y + 11 * 2)
+            if paragraph.style.value == ParagraphStyle.BULLET:
+                _, cursor = plain_writer.append(cursor, "• ")
+            for span in paragraph.contents:
+                if paragraph.style.value == ParagraphStyle.BOLD:
+                    cursor = visit_span(span, cursor, font_size=13)
+                elif paragraph.style.value == ParagraphStyle.HEADING:
+                    cursor = visit_span(span, cursor, font_size=22)
+                else:
+                    cursor = visit_span(span, cursor, font_size=11)
+
+    plain_writer.write_text(page)
 
     # annot.update() calls have a lot of overhead.
     # We can batch tools with equal settings to reduce the amount of calls drastically
