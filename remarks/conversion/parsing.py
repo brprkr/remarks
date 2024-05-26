@@ -403,7 +403,7 @@ def rescale_parsed_data(
                             f"{float(point[1]) * scale + offset_y:.3f}",
                         )
 
-    if "text" in parsed_data:
+    if "text" in parsed_data and parsed_data["text"]:
         parsed_data["text"]["pos_x"] = parsed_data["text"]["pos_x"] + offset_x
         parsed_data["text"]["pos_y"] = parsed_data["text"]["pos_y"] + offset_y
 

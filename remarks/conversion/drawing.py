@@ -4,7 +4,7 @@ from pprint import pprint
 import fitz  # PyMuPDF
 import shapely.geometry as geom  # Shapely
 from rmscene.scene_items import ParagraphStyle
-from rmscene.text import TextDocument, BoldSpan, ItalicSpan, TextSpan, CrdtStr
+from rmscene.text import CrdtStr
 
 from .parsing import TLayers, TTextBlock
 from ..utils import (

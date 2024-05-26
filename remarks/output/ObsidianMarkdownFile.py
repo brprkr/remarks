@@ -51,6 +51,7 @@ class ObsidianMarkdownFile:
     def add_highlights(
         self, page_idx: int, highlights: List[GlyphRange], doc: Document
     ):
+        page_idx += 1
         highlight_content = ""
         joined_highlights = []
         highlights = sorted(
