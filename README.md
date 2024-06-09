@@ -11,7 +11,7 @@ This is a fork of https://github.com/lucasrla/remarks. This fork has a few goals
 
 - Support ReMarkable v3
 - Support Type Folio output
-- Retain support for older ReMarkable version
+- Retain support for older ReMarkable versions
 - Note: This fork **does not** support all original output variants offered by the original remarks. The focus lies only on getting PDFs and text highlights out. You can use other tools such as Pandoc for conversion.
 
 This project assumes familiarity with `git`, `python` and the commandline.
