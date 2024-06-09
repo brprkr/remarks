@@ -107,7 +107,7 @@ python -m pytest -q remarks/test_initial.py
 
 ## Credits and Acknowledgements
 
-- [Scrybble](https://scrybble.ink) A paid user-friendly service that helps non-technical ReMarkable users synchronize their notebooks to Obsidian. 
+- [Scrybble](https://scrybble.ink) A paid user-friendly service that helps non-technical ReMarkable users synchronize their notebooks to Obsidian. Financially supports @Azeirah to work on remarks.
 
 - [lucasrla](https://github.com/lucasrla) who wrote the original implementation of remarks
 
