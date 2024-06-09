@@ -2,7 +2,7 @@
 
 With Remarks, you can export notebooks and PDFs from your ReMarkable.
 
-1. Get your notebook as PDF
+1. Export your notebooks as PDF
 2. Extract highlights as text
 
 Remarks: Convert ReMarkable notebooks to PDF and extract highlights :)
