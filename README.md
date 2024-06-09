@@ -37,7 +37,7 @@ And then use `remarks` to export annotated pages to `Markdown`, `PDF`, `PNG`, or
 
 ## Installing Remarks
 
-Linux is recommended, Windows should work, but I'm not sure how.
+Linux is recommended, Windows should work too.
 
 - Install Python 3.10+ and [Poetry](https://python-poetry.org/docs/)
 
@@ -74,11 +74,6 @@ There are several options for getting them to your computer. Find below some sug
 
 Run `remarks` and check out what arguments are available:
 
-```sh
-python -m remarks --help
-```
-
-Next, for a quick hands-on experience of `remarks`, run the demo:
 
 ```sh
 # Alan Turing's 1936 foundational paper (with a few highlights and scribbles)
@@ -87,7 +82,7 @@ Next, for a quick hands-on experience of `remarks`, run the demo:
 # "On Computable Numbers, with an Application to the Entscheidungsproblem"
 # https://londmathsoc.onlinelibrary.wiley.com/doi/abs/10.1112/plms/s2-42.1.230
 
-python -m remarks demo/on-computable-numbers/xochitl remarks-example/ --per_page_targets png md pdf --modified_pdf
+python -m remarks demo/on-computable-numbers/xochitl remarks-example/
 ```
 
 A few other examples:
@@ -95,11 +90,10 @@ A few other examples:
 ```sh
 # Assuming your `xochitl` files are at `~/backups/remarkable/xochitl/`
 
-python -m remarks ~/backups/remarkable/xochitl/ example_1/ --ann_type highlights --per_page_targets md
+python -m remarks ~/backups/remarkable/xochitl/ example_1/
 
-python -m remarks ~/backups/remarkable/xochitl/ example_2/ --per_page_targets png
+python -m remarks ~/backups/remarkable/xochitl/ example_2/
 ```
-
 
 ## Tests
 
@@ -109,16 +103,11 @@ Example:
 
 ```sh
 python -m pytest -q remarks/test_initial.py
-..                                         [100%]
-2 passed in 2.51s
-
-ls tests/out
-  1936 On Computable Numbers, with an Application to the Entscheidungsproblem - A. M. Turing _highlights.md  
-  Gosper _remarks.pdf
-  1936 On Computable Numbers, with an Application to the Entscheidungsproblem - A. M. Turing _remarks.pdf
 ```
 
 ## Credits and Acknowledgements
+
+- [Scrybble](https://scrybble.ink) A paid user-friendly service that helps non-technical ReMarkable users synchronize their notebooks to Obsidian. 
 
 - [lucasrla](https://github.com/lucasrla) who wrote the original implementation of remarks
 
