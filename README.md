@@ -1,27 +1,20 @@
 # Scrybble remarks
 
+With Remarks, you can export notebooks and PDFs from your ReMarkable.
+
+1. Get your notebook as PDF
+2. Extract highlights as text
+
 Remarks: Convert ReMarkable notebooks to PDF and extract highlights :)
 
-This is a fork from https://github.com/lucasrla/remarks. This fork has a few goals
+This is a fork of https://github.com/lucasrla/remarks. This fork has a few goals
 
 - Support ReMarkable v3
 - Support Type Folio output
 - Retain support for older ReMarkable version
-- Enhanced quality of the codebase by refactoring
-- Guaranteeing functionality with [snapshot testing](https://pypi.org/project/pytest-snapshot/) for PDF output
+- Note: This fork **does not** support all original output variants offered by the original remarks. The focus lies only on getting PDFs and text highlights out. You can use other tools such as Pandoc for conversion.
 
 This project assumes familiarity with `git`, `python` and the commandline.
-
-## Some use cases
-
-- **In: PDF highlighted on reMarkable → Out: PDF with parseable highlights**  
-Someone who highlights lots of PDFs (e.g., researchers, academics, etc) can export their highlights for processing with a reference management tool, like [Zotero](https://www.zotero.org) (e.g., [issue #2](https://github.com/lucasrla/remarks/issues/2#issuecomment-732166093)).
-
-- **Extract highlighted text from PDF to Markdown**  
-Infovores of the world can export highlighted text to [Markdown](https://en.wikipedia.org/wiki/Markdown) and insert them into their preferred "tool for networked thought", like [Obsidian](https://obsidian.md/) or [Roam Research](https://roamresearch.com).
-
-- **Export annotated PDF pages to full-page images**  
-Sometimes having just the textual content is not enough, sometimes you need the actual (visual) context around your annotation. To help you in such situations, `remarks` can export each annotated PDF page to a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) image file. Images can be easily uploaded or embedded anywhere, from personal websites to "tools for networked thought".
 
 ## A visual example
 
