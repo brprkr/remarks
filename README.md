@@ -1,17 +1,16 @@
-# remarks
+# Scrybble remarks
 
-> ⚠️ `remarks` does NOT work with annotations created by reMarkable sofware >= 3.0 yet. [Follow issue #58 for updates](https://github.com/lucasrla/remarks/issues/58) ⚠️
+Remarks: Convert ReMarkable notebooks to PDF and extract highlights :)
 
-Extract annotations (text highlights and scribbles) and convert them to `Markdown`, `PDF`, `PNG`, and `SVG`. 
+This is a fork from https://github.com/lucasrla/remarks. This fork has a few goals
 
-`remarks` works with documents annotated on [reMarkable™ paper tablets](https://remarkable.com) &mdash; both 1st and 2nd generation &mdash; up to software version `2.15.0.1067`.
+- Support ReMarkable v3
+- Support Type Folio output
+- Retain support for older ReMarkable version
+- Enhanced quality of the codebase by refactoring
+- Guaranteeing functionality with [snapshot testing](https://pypi.org/project/pytest-snapshot/) for PDF output
 
-Note that `remarks` not only is highly experimental, it is _very likely to break_ after you update the software of your tablet. I might find some spare time to continue to maintain it, but I make no promises.
-
-`remarks` code is fairly straightforward but not elegant at all. It has been put together in a couple of hours. You are free to fork and run with it though ;)
-
-Most of the actual heavy lifting has been done by the open source community and PyMuPDF. See [Credits and Acknowledgements](#credits-and-acknowledgements).
-
+This project assumes familiarity with `git`, `python` and the commandline.
 
 ## Some use cases
 
@@ -24,10 +23,9 @@ Infovores of the world can export highlighted text to [Markdown](https://en.wiki
 - **Export annotated PDF pages to full-page images**  
 Sometimes having just the textual content is not enough, sometimes you need the actual (visual) context around your annotation. To help you in such situations, `remarks` can export each annotated PDF page to a [PNG](https://en.wikipedia.org/wiki/Portable_Network_Graphics) image file. Images can be easily uploaded or embedded anywhere, from personal websites to "tools for networked thought".
 
-
 ## A visual example
 
-Highlight and annotate PDFs with your Marker on your reMarkable tablet: 
+Highlight and annotate PDFs
 
 <!-- How to host images on GitHub but outside your repository? Open an issue, upload your images, and voila! Trick learned from http://felixhayashi.github.io/ReadmeGalleryCreatorForGitHub/ -->
 
@@ -44,22 +42,20 @@ And then use `remarks` to export annotated pages to `Markdown`, `PDF`, `PNG`, or
 > <mark>To</mark>
 > <mark>the memory of My</mark> <mark>Parents</mark>
 
+## Installing Remarks
 
-## Compatibility and dependencies
+Linux is recommended, Windows should work, but I'm not sure how.
 
-Because `remarks` depends only on [PyMuPDF](https://github.com/pymupdf/PyMuPDF) and [Shapely](https://github.com/shapely/shapely), there is no need to install `imagemagick`, `opencv`, or any additional image library. Both PyMuPDF and Shapely have [pre-built](https://pypi.org/project/PyMuPDF/#files) [wheels](https://pypi.org/project/Shapely/#files) for several platforms (macOS, Linux, Windows) and recent Python 3 versions, so installing them should be smooth and easy for most people.
+- Install Python 3.10+ and [Poetry](https://python-poetry.org/docs/)
 
-I currently use `remarks` with [reMarkable 1](https://remarkable.com/store/remarkable) and [reMarkable 2](https://remarkable.com/store/remarkable-2) tablets running software versions `2.14.3.1047` and `2.15.0.1067` on macOS Ventura (`13.2.1`) with CPython `3.10.9`. I don't have other equipment to test it thoroughly, but I expect `remarks` to work just fine in all common setups.
+```bash
+## Get remarks on your computer
+git clone https://github.com/lucasrla/remarks.git && cd remarks
+## Install the dependencies
+poetry install
+```
 
-Incidentally, help the community keeping track of `remarks` compatibility across different setups:
-
-- If it is working well for you, [make a quick comment with your setup](https://github.com/lucasrla/remarks/discussions/8)
-- If you run into any problems, [raise an issue](https://github.com/lucasrla/remarks/issues/new/choose)
-
-If [OCRmyPDF](https://github.com/ocrmypdf/OCRmyPDF) is available on your computer, `remarks` may (optionally) use it to OCR PDFs before extracting their highlighted text.
-
-
-## Setup
+## Using Remarks
 
 To get `remarks` up and running on your local machine, follow the instructions below:
 
@@ -80,26 +76,6 @@ There are several options for getting them to your computer. Find below some sug
 
 - **Copy from reMarkable's official desktop application**  
   If you have a [reMarkable's official desktop app](https://support.remarkable.com/s/article/Desktop-app) installed, _most_ of the files we need are already easily available on your computer. For macOS users, the files are located at `~/Library/Application\ Support/remarkable/desktop`. To avoid interfering with reMarkable's official app, copy and paste all the contents of `~/Library/Application\ Support/remarkable/desktop` to another directory (one that you can safely interact with – say, `~/Documents/remarkable/docs`). Please note that this method won't allow you to use remarks' EPUB functionality. That's because this directory doesn't seem to include the [PDF files that reMarkable auto converts your EPUBs to](https://github.com/lucasrla/remarks/pull/34).
-
-### 2. Clone this repository and install the dependencies
-
-```sh
-### 2.1 Clone
-git clone https://github.com/lucasrla/remarks.git && cd remarks
-
-
-### 2.2 Create and activate a virtual environment
-
-# If you're using poetry, a new virtual env should be created automatically (as set forth in our `poetry.toml`)
-# But feel free to manage your virtual env needs with any of the alternatives (e.g. virtualenv, virtualenvwrapper, etc)
-
-
-### 2.3 Install the dependencies
-
-# Install dependencies with:
-poetry install
-```
-
 
 ## Usage and Demo
 
@@ -149,8 +125,9 @@ ls tests/out
   1936 On Computable Numbers, with an Application to the Entscheidungsproblem - A. M. Turing _remarks.pdf
 ```
 
-
 ## Credits and Acknowledgements
+
+- [lucasrla](https://github.com/lucasrla) who wrote the original implementation of remarks
 
 - [@JorjMcKie](https://github.com/JorjMcKie) who wrote and maintains the great [PyMuPDF](https://github.com/pymupdf/PyMuPDF)
 
@@ -170,11 +147,9 @@ ls tests/out
 
 For more reMarkable resources, check out [awesome-reMarkable](https://github.com/reHackable/awesome-reMarkable) and [remarkablewiki.com](https://remarkablewiki.com/).
 
-
 ## License
 
 `remarks` is [Free Software](https://www.gnu.org/philosophy/free-sw.html) distributed under the [GNU General Public License v3.0](https://choosealicense.com/licenses/gpl-3.0/).
-
 
 ## Disclaimers
 
