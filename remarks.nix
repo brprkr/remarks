@@ -1,15 +1,25 @@
 with import <nixpkgs> {};
 let
+  pythonEnv = pkgs.python310.withPackages (ps: with ps; [
+    # Add any Python packages you need here
+  ]);
+
   shellHookScript = ''
     #!/usr/bin/bash
-    export LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath [
+      pkgs.libgcc.lib
+      pkgs.zlib
+    ]}:$LD_LIBRARY_PATH"
 
     if ! [[ -d .venv ]]; then
-      poetry env use python3.10
+      ${pythonEnv}/bin/python -m venv .venv
+      # shellcheck disable=SC1091
+      source .venv/bin/activate
+      pip install poetry
       poetry install
     else
       # shellcheck disable=SC1091
-      source ./.venv/bin/activate
+      source .venv/bin/activate
     fi
   '';
 
@@ -23,14 +33,11 @@ let
   '';
 in
 pkgs.mkShell {
-  NIX_LD_LIBRARY_PATH = lib.makeLibraryPath [ pkgs.stdenv.cc.cc zlib ];
-  NIX_LD = lib.fileContents "${stdenv.cc}/nix-support/dynamic-linker";
-
   buildInputs = [
-    pkgs.python310
-    pkgs.poetry
+    pythonEnv
     pkgs.zlib
     pkgs.gnumake
+    pkgs.libgcc.lib
   ];
 
   shellHook = builtins.readFile "${shellHookChecked}/shellhook.sh";
