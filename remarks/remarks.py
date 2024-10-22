@@ -155,6 +155,8 @@ def process_document(
         if rm_annotation_file:
             try:
                 dims = determine_document_dimensions(rm_annotation_file)
+                print("DIMS____")
+                print(dims)
             except ValueError:
                 dims = REMARKABLE_DOCUMENT
         else:
@@ -187,32 +189,41 @@ def process_document(
             malformed=assume_malformed_pdfs,
         )
 
-        is_ann_out_page = False
 
         scale = 1
-        if "scribbles" in ann_type and has_annotations:
+        if ("scribbles" in ann_type or "highlights" in ann_type) and has_annotations:
             (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
-            x_max, y_max, x_min, y_min = get_ann_max_bound(ann_data)
-            offset_x = 0
-            offset_y = 0
-            is_ann_out_page = True
-            obsidian_markdown.add_highlights(page_idx, ann_data["highlights"], document)
-            if version == "V6":
-                offset_x = RM_WIDTH / 2
-            if dims.height >= (RM_HEIGHT + 88 * 3):
-                offset_y = 3 * 88  # why 3 * text_offset? No clue, ask ReMarkable.
-            if abs(x_min) + abs(x_max) > 1872:
-                scale = RM_WIDTH / (max(x_max, 1872) - min(x_min, 0))
-                ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
-            else:
-                scale = RM_HEIGHT / (max(y_max, 2048) - min(y_min, 0))
-                ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y)
+
+            #BP: Choosing to ignore annotations outside of bounds. Not basing scaling or offsets on parsed positions of annotations, since I am just adding annotations back into the pdf in place. 
+            # x_max, y_max, x_min, y_min = get_ann_max_bound(ann_data)
+
+            obsidian_markdown.add_highlights(page_idx, ann_data["highlights"], document) 
+
+            target_page_rect: fitz.Rect = pdf_src[page_idx].rect;
+
+            print("PAGE RECT")
+            print(target_page_rect)
+
+            ann_data = rescale_parsed_data(ann_data, dims, target_page_rect)
+            #raise ValueError(target_page_rect)
+
+            #something = RM_HEIGHT / (max(y_max, 2048) - min(y_min, 0))
+            #print(dims)
+            #print(y_max)
+            #print(y_min)
+            #if something < .9 and something > .8:
+            #    raise ValueError(something)
+            #if abs(x_min) + abs(x_max) > 1872:
+            #    scale = RM_WIDTH / (max(x_max, 1872) - min(x_min, 0))
+            #    ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y, target_page_rect)
+            #else:
+            #    scale = RM_HEIGHT / (max(y_max, 2048) - min(y_min, 0))
+            #    ann_data = rescale_parsed_data(ann_data, scale, offset_x, offset_y, target_page_rect)
         if "highlights" not in ann_type and has_ann_hl:
             logging.info(
                 "- Found highlighted text on page #{page_idx} but `--ann_type` flag is set to `scribbles` only, so we won't bother with it"
             )
 
-        is_ocred = False
 
         # This is for highlights that reMarkable's own "smart" detection misses
         # Most likely, they're highlights on scanned / image-based PDF, so in
@@ -228,9 +239,9 @@ def process_document(
             and is_executable_available("ocrmypdf")
             and not avoid_ocr
         ):
+            raise NotImplementedError("Not implementing OCR in this fork (-BP)")
             logging.warning("- Will run OCRmyPDF on this document. Hold on!")
             work_doc, ann_page = process_ocr(work_doc)
-            is_ocred = True
 
         if has_annotations:
             ann_page = draw_annotations_on_pdf(ann_data, ann_page)
@@ -241,7 +252,7 @@ def process_document(
         if (
             "highlights" in ann_type
             and has_ann_hl
-            and (is_text_extractable or is_ocred)
+            and is_text_extractable
         ):
             ann_hl_groups = extract_groups_from_pdf_ann_hl(
                 ann_page,
@@ -305,30 +316,22 @@ def process_document(
         if combined_md and (has_ann_hl or has_smart_highlights):
             combined_md_strs += [(page_idx + md_page_offset, hl_text + "\n")]
 
-        # If there are annotations outside the original page limits
-        # or if the PDF has been OCRed by us, insert the annotated page
-        # that we've just (re)created from scratch
-        if combined_pdf and (is_ann_out_page or is_ocred):
-            pdf_src.insert_pdf(work_doc, start_at=page_idx)
-            pdf_src.delete_page(page_idx + 1)
-
-        # Else, draw annotations on the original PDF page (in-place) to do
+        # Draw annotations on the original PDF page (in-place) to do
         # our best to preserve in-PDF links and the original page size
-        elif combined_pdf:
-            if has_annotations:
-                draw_annotations_on_pdf(
-                    ann_data,
-                    pdf_src[page_idx],
-                    inplace=True,
-                )
+        if has_annotations:
+            draw_annotations_on_pdf(
+                ann_data,
+                pdf_src[page_idx],
+                inplace=True,
+            )
 
-            if has_smart_highlights:
-                add_smart_highlight_annotations(
-                    smart_hl_data,
-                    pdf_src[page_idx],
-                    scale,
-                    inplace=True,
-                )
+        if has_smart_highlights:
+            add_smart_highlight_annotations(
+                smart_hl_data,
+                pdf_src[page_idx],
+                scale,
+                inplace=True,
+            )
 
         work_doc.close()
 

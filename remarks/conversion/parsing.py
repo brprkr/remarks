@@ -1,6 +1,7 @@
 import logging
 import math
 import struct
+import fitz
 from enum import Enum
 from pprint import pprint
 from typing import Dict, List, Any, TypedDict, Tuple
@@ -387,8 +388,24 @@ def parse_v3_to_v5(data, dims: ReMarkableDimensions, is_v3, nlayers, offset):
 
 # TODO: make the rescale part of the parsing (or perhaps drawing?) process
 def rescale_parsed_data(
-    parsed_data: TLayers, scale: float, offset_x: int, offset_y: int
+    parsed_data: TLayers, 
+    remarkable_document_dims: ReMarkableDimensions,
+    target_page_rect: fitz.Rect
+
+
 ):
+    # https://github.com/ricklupton/rmscene/issues/11
+    scale_coefficient = REMARKABLE_DOCUMENT.height / max(remarkable_document_dims.height, REMARKABLE_DOCUMENT.height)
+    print("SCALE COEFFICIENT: ")
+    print(scale_coefficient)
+
+    scale = (target_page_rect.width / REMARKABLE_DOCUMENT.width) * scale_coefficient
+
+    scale = .01
+
+    offset_x = target_page_rect.width / 2
+    offset_y = 0
+
     for layer in parsed_data["layers"]:
         for _, st_value in layer["strokes"].items():
             for _, sg_value in enumerate(st_value["segments"]):
@@ -410,6 +427,16 @@ def rescale_parsed_data(
     for layer in parsed_data["layers"]:
         for rmRectangles in layer["rectangles"]:
             for geomRectangle in rmRectangles["rectangles"]:
+                print("RECTANGLE:")
+                print(geomRectangle)
+
+                if geomRectangle.y > 1872:
+                    print("!")
+
+                if geomRectangle.x > 1404 / 2:
+                    print("?")
+
+
                 x_max_scaled = (geomRectangle.x + geomRectangle.w) * scale + offset_x
                 y_max_scaled = (geomRectangle.y + geomRectangle.h) * scale + offset_y
 
