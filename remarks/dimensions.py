@@ -34,7 +34,7 @@ class ReMarkableDimensions(Dimensions):
 
     def __eq__(self,other):
         if not isinstance(other, ReMarkableDimensions):
-            return false
+            return False
         return self.width == other.width and self.height == other.height
 
     def __hash__(self):

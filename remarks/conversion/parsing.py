@@ -393,12 +393,19 @@ def rescale_parsed_data(
     target_page_rect: fitz.Rect
 ):
 
-    scale_coefficient = REMARKABLE_DOCUMENT.height / (remarkable_document_dims.height)
-    
-    print("SCALE COEFFICIENT: ")
-    print(scale_coefficient)
+    print("Compare aspect, src > tablet?")
 
-    scale = (target_page_rect.width / REMARKABLE_DOCUMENT.width) * scale_coefficient
+    # Strategy depends on aspect ratio of pdf, compared to aspect ratio of ReMarkable screen (?)
+    if target_page_rect.width / target_page_rect.height > REMARKABLE_DOCUMENT.width / REMARKABLE_DOCUMENT.height:
+        scale_coefficient = REMARKABLE_DOCUMENT.height / (remarkable_document_dims.height)
+        scale = (target_page_rect.width / REMARKABLE_DOCUMENT.width) * scale_coefficient
+    else:
+        # BP: Not sure where 2048 comes from. Upstream  also takes into account y_max and y_min for page annotations (i.e. out of bounds annotations), which I may need to reintegrate
+        scale_coefficient = REMARKABLE_DOCUMENT.height / 2048 
+        print("SCALE COEFFICIENT")
+        scale = (target_page_rect.height / REMARKABLE_DOCUMENT.height) * scale_coefficient
+
+
 
 
     offset_x = target_page_rect.width / 2
