@@ -410,10 +410,14 @@ def rescale_parsed_data(
     for layer in parsed_data["layers"]:
         for rmRectangles in layer["rectangles"]:
             for geomRectangle in rmRectangles["rectangles"]:
-                geomRectangle.x = geomRectangle.x + offset_x
-                geomRectangle.y = geomRectangle.y + offset_y
-                # geomRectangle.w = geomRectangle.w
-                # geomRectangle.h = geomRectangle.h
+                x_max_scaled = (geomRectangle.x + geomRectangle.w) * scale + offset_x
+                y_max_scaled = (geomRectangle.y + geomRectangle.h) * scale + offset_y
+
+                geomRectangle.x = geomRectangle.x * scale + offset_x
+                geomRectangle.y = geomRectangle.y * scale + offset_y
+
+                geomRectangle.w =  x_max_scaled - geomRectangle.x
+                geomRectangle.h =  y_max_scaled - geomRectangle.y
 
     return parsed_data
 
