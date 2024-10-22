@@ -25,7 +25,7 @@ from .conversion.text import (
     extract_groups_from_smart_hl,
     prepare_md_from_hl_groups,
 )
-from .dimensions import REMARKABLE_DOCUMENT
+from .dimensions import (REMARKABLE_DOCUMENT, ReMarkableDimensions)
 from .output.ObsidianMarkdownFile import ObsidianMarkdownFile
 from .utils import (
     is_document,
@@ -123,6 +123,8 @@ def process_document(
     document = Document(metadata_path)
     pdf_src = document.open_source_pdf()
 
+    tablet_dims_per_src_sizes = mode_document_dimensions_per_output_pdf_page_size(document, pdf_src)
+
     pages_magnitude = document.pages_magnitude()
 
     if combined_md:
@@ -152,13 +154,9 @@ def process_document(
 
         # Get document page dimensions and calculate what scale should be
         # applied to fit it into the device (given the device's own dimensions)
+        target_page_rect: fitz.Rect = pdf_src[page_idx].rect;
         if rm_annotation_file:
-            try:
-                dims = determine_document_dimensions(rm_annotation_file)
-                print("DIMS____")
-                print(dims)
-            except ValueError:
-                dims = REMARKABLE_DOCUMENT
+            dims = tablet_dims_per_src_sizes[target_page_rect]
         else:
             dims = REMARKABLE_DOCUMENT
         ann_page = work_doc.new_page(
@@ -166,6 +164,7 @@ def process_document(
             height=dims.height,
         )
 
+        #BP: TODO Do we still need this? WHat about ann_page?
         pdf_src_page_rect = fitz.Rect(
             0, 0, REMARKABLE_DOCUMENT.width, REMARKABLE_DOCUMENT.height
         )
@@ -199,7 +198,6 @@ def process_document(
 
             obsidian_markdown.add_highlights(page_idx, ann_data["highlights"], document) 
 
-            target_page_rect: fitz.Rect = pdf_src[page_idx].rect;
 
             print("PAGE RECT")
             print(target_page_rect)
@@ -240,8 +238,6 @@ def process_document(
             and not avoid_ocr
         ):
             raise NotImplementedError("Not implementing OCR in this fork (-BP)")
-            logging.warning("- Will run OCRmyPDF on this document. Hold on!")
-            work_doc, ann_page = process_ocr(work_doc)
 
         if has_annotations:
             ann_page = draw_annotations_on_pdf(ann_data, ann_page)
@@ -398,3 +394,69 @@ def process_ocr(work_doc):
     pathlib.Path(tmp_fname).unlink()
 
     return work_doc, ann_page
+
+
+# Unfortunately 'determine_document_dimensions' doesn't always produce the correct on-table dimensions for each page. Here we go through the document's annotated pages using the source pdf page rects, and for each size/rect we tally each calculated table document dimensions. We then map that size/rect to the mode of the calculated width/height pair. When we need a tiebreaker, we use the max of width and height separately
+#
+# BP: this heuristic assumes the tablet uses the same dimensions for each given underlying pdf page size. (See various discussions about coordinates changing when text boxes are added; Here I ignore that issue as I'm not concerned with supporting keyboard)
+def mode_document_dimensions_per_output_pdf_page_size(document: Document, src_pdf: fitz.Document):
+
+    page_rects = {}
+
+    for (
+        page_uuid,
+        page_idx,
+        rm_annotation_file,
+        has_annotations,
+        rm_highlights_file,
+        has_smart_highlights,
+    ) in document.pages():
+        if rm_annotation_file:
+            src_rect = src_pdf[page_idx].rect
+            try:
+                dims = determine_document_dimensions(rm_annotation_file)
+            except:
+                dims = REMARKABLE_DOCUMENT
+
+            if src_rect not in page_rects:
+                page_rects[src_rect] = {dims: 1}
+            else:
+                dims_counts = page_rects[src_rect]
+
+                if (dims.width, dims.height) in dims_counts:
+                    dims_counts[dims] += 1
+                else:
+                    dims_counts[dims] = 1
+
+    results = {}
+
+    # Use mode, or, as a tiebreaker, separate maxes for width/height
+    for src_rect, dims_counts in page_rects.items():
+        print(src_rect, dims_counts)
+
+        mode_count = max(dims_counts.values())
+
+        dims = [k for k,v in dims_counts.items() if v == mode_count]
+
+        if len(dims) == 1:
+            # Return mode
+            results[src_rect] = dims[0]
+        else:
+            # Tiebreaker. Return max width and max height
+            results[src_rect] = ReMarkableDimensions(
+                width = max([dim.width for dim in dims]),
+                height = max([dim.height for dim in dims]),
+            )
+
+    return results
+
+
+    
+
+
+
+
+
+
+
+

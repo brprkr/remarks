@@ -391,17 +391,15 @@ def rescale_parsed_data(
     parsed_data: TLayers, 
     remarkable_document_dims: ReMarkableDimensions,
     target_page_rect: fitz.Rect
-
-
 ):
-    # https://github.com/ricklupton/rmscene/issues/11
-    scale_coefficient = REMARKABLE_DOCUMENT.height / max(remarkable_document_dims.height, REMARKABLE_DOCUMENT.height)
+
+    scale_coefficient = REMARKABLE_DOCUMENT.height / (remarkable_document_dims.height)
+    
     print("SCALE COEFFICIENT: ")
     print(scale_coefficient)
 
     scale = (target_page_rect.width / REMARKABLE_DOCUMENT.width) * scale_coefficient
 
-    scale = .01
 
     offset_x = target_page_rect.width / 2
     offset_y = 0

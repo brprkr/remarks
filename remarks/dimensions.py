@@ -32,6 +32,16 @@ class ReMarkableDimensions(Dimensions):
     def to_mm(self):
         return PaperDimensions(int(self.width * (2100/1404)), int(self.height * (2970 / 1872)))
 
+    def __eq__(self,other):
+        if not isinstance(other, ReMarkableDimensions):
+            return false
+        return self.width == other.width and self.height == other.height
+
+    def __hash__(self):
+        return hash((self.width, self.height))
+
+
+
 
 @dataclass
 class PaperDimensions(Dimensions):
