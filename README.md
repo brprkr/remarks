@@ -1,9 +1,24 @@
+### Focus of this fork:
+
+This fork is geared toward personal use, with narrower scope than the Scrybble Remarks project:
+- Consistent coordinates for drawing/highlight annotations on pdf output, for portrait-orientation books, on tablet software 3.3.2.1666. 
+- Revised obsidian output
+
+The following are not goals of this fork. Please use upstream:
+- OCR 
+- Non-pdf outputs (svg, png). These may still work, but not currently checking
+- Support for keyboard input or textboxes
+
+___
+
 # Scrybble remarks
 
 With Remarks, you can export notebooks and PDFs from your ReMarkable.
 
 1. Export your notebooks as PDF
 2. Extract highlights as text
+
+
 
 ## Goals
 
