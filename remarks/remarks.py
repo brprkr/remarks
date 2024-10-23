@@ -390,7 +390,8 @@ def process_document(
             pages_order.append(page_idx)
 
         if combined_md and (has_ann_hl or has_smart_hl):
-            combined_md_strs += [(pdf_src[page_idx].get_label(), hl_text + "\n")]
+            label = pdf_src[page_idx].get_label()
+            combined_md_strs += [(label if label else page_idx + md_page_offset, hl_text + "\n")]
 
         # If there are annotations outside the original page limits
         # or if the PDF has been OCRed by us, insert the annotated page
