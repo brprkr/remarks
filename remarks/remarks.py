@@ -353,8 +353,9 @@ def process_document(
                 presentation=md_hl_format,
             )
 
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+
         if per_page_targets and (has_ann or has_smart_hl):
-            out_path.mkdir(parents=True, exist_ok=True)
 
             if "pdf" in per_page_targets:
                 subdir = prepare_subdir(out_path, "pdf")
