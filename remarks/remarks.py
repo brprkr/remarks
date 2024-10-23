@@ -193,16 +193,13 @@ def process_document(
         if ("scribbles" in ann_type or "highlights" in ann_type) and has_annotations:
             (ann_data, has_ann_hl), version = parse_rm_file(rm_annotation_file)
 
-            #BP: Choosing to ignore annotations outside of bounds. Not basing scaling or offsets on parsed positions of annotations, since I am just adding annotations back into the pdf in place. 
-            # x_max, y_max, x_min, y_min = get_ann_max_bound(ann_data)
+
+
+
+            ann_data = rescale_parsed_data(ann_data, dims, target_page_rect)
 
             obsidian_markdown.add_highlights(page_idx, ann_data["highlights"], document) 
 
-
-            print("PAGE RECT")
-            print(target_page_rect)
-
-            ann_data = rescale_parsed_data(ann_data, dims, target_page_rect)
             #raise ValueError(target_page_rect)
 
             #something = RM_HEIGHT / (max(y_max, 2048) - min(y_min, 0))
