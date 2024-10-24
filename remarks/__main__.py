@@ -1,6 +1,8 @@
 import logging
 import pathlib
 import argparse
+import os
+import sys
 
 from remarks import run_remarks
 
@@ -13,13 +15,15 @@ def main():
 
     parser.add_argument(
         "input_dir",
-        help="xochitl-derived directory that contains *.pdf, *.content, *.metadata, *.highlights/*.json and */*.rm files",
+        help="xochitl-derived directory that contains *.pdf, *.content, *.metadata, *.highlights/*.json and */*.rm files. Can also be given by $REMARKS_INPUT_DIR",
         metavar="INPUT_DIRECTORY",
+        nargs="?"
     )
     parser.add_argument(
         "output_dir",
-        help="Base directory for all files created (*.pdf, *.png, *.md, and/or *.svg)",
+        help="Base directory for all files created (*.pdf, *.png, *.md, and/or *.svg). Can also be given by $REMARKS_OUTPUT_DIR",
         metavar="OUTPUT_DIRECTORY",
+        nargs="?"
     )
     parser.add_argument(
         "--file_name",
@@ -33,7 +37,7 @@ def main():
     )
     parser.add_argument(
         "--file_path",
-        help="Work only on files whose (meaningful) path contains this string",
+        help="Work only on files whose (meaningful) path contains this string. Overrides $REMARKS_FILE_PATH variable",
         metavar="FILEPATH_STRING",
     )
     parser.add_argument(
@@ -67,6 +71,11 @@ def main():
         metavar="HIGHLIGHTS_FORMAT",
     )
     parser.add_argument(
+        "--md_hl_output_dir",
+        help="Choose where to save Markdown files with highlighted text. Defaults to FILE_PATH",
+        metavar="HIGHLIGHTS_FOLDER_OUTPUT_DIRECTORY",
+    )
+    parser.add_argument(
         "--md_page_offset",
         help="For page headers in Markdown files, offset their value by PAGE_OFFSET. This is useful for citations. Defaults to 0",
         default=0,
@@ -79,6 +88,13 @@ def main():
         default="atx",
         help="For Markdown files, use either atx headers (# Heading 1; ## Heading 2) or setex (dashes under a header title). Defaults to atx",
         metavar="HEADER_FORMAT",
+    )
+    parser.add_argument(
+        "--md_obsidian_format",
+        dest="md_obsidian_format",
+        default=True,
+        help="For Markdown files, use a pre-set template intended for Obsidian. Only works with 'atx' header format. Defaults to True",
+        metavar="OBSIDIAN FORMAT"
     )
     parser.add_argument(
         "--per_page_targets",
@@ -109,7 +125,7 @@ def main():
     parser.add_argument(
         "--avoid_ocr",
         action="store_true",
-        help="By default, remarks tries to use OCRmyPDF to extract highlighted text from image-based PDFs. Use this flag to skip running the ocrmypdf executable altogether",
+        help="By default, remarks tries to use OCRmyPDF to extract highlighted text from image-based PDFs. Use this flag to skip running the ocrmypdf executable altogether. Defaults to true",
     )
     parser.add_argument(
         "-h",
@@ -123,7 +139,7 @@ def main():
         modified_pdf=False,
         assume_malformed_pdfs=False,
         combined_md=True,
-        avoid_ocr=False,
+        avoid_ocr=True,
     )
 
     args = parser.parse_args()
@@ -138,11 +154,31 @@ def main():
         level=log_level,
     )
 
+    if input_dir is None and output_dir is None:
+        input_dir = os.getenv("REMARKS_INPUT_DIR")
+        output_dir = os.getenv("REMARKS_OUTPUT_DIR")
+        if input_dir is None:
+            print("Requires REMARKS_INPUT_DIR variable, or positional arguent.", file=sys.stderr)
+        if output_dir is None:
+            print("Requires REMARKS_OUTPUT_DIR variable, or positional argument.", file=sys.stderr)
+        if input_dir is None or output_dir is None:
+            exit(1)
+    elif input_dir is None or output_dir is None:
+        print("Both or neither positional argument INPUT_DIRECTORY and OUTPUT_DIRECTORY must be given", file=sys.stderr)
+        exit(1)
+
+
     if not pathlib.Path(input_dir).exists():
         parser.error(f'Directory "{input_dir}" does not exist')
 
     if not pathlib.Path(output_dir).is_dir():
         pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+
+    if args_dict["file_path"] is None:
+        args_dict["file_path"] = os.getenv("REMARKS_FILE_PATH")
+    if args_dict["md_hl_output_dir"] is None:
+        args_dict["md_hl_output_dir"] = os.getenv("REMARKS_MD_HL_OUTPUT_DIR")
 
     run_remarks(input_dir, output_dir, **args_dict)
 

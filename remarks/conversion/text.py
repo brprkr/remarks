@@ -234,10 +234,15 @@ def prepare_md_from_hl_groups(
     page,
     ann_hl_groups,
     smart_hl_groups,
+    obsidian_format,
     presentation="whole_block",
 ):
     hl_word_groups = ann_hl_groups + smart_hl_groups
     # print("hl_word_groups", hl_word_groups)
+
+
+    mark_open = "<mark>" if not obsidian_format else "=="
+    mark_close = "</mark>" if not obsidian_format else "=="
 
     if presentation == "whole_block":
         # TODO: Should we avoid sorting here if PDF is well-formed? Need some
@@ -264,15 +269,16 @@ def prepare_md_from_hl_groups(
                 # print(f"hl_group_str: {hl_group_str}")
                 if hl_group_str in text_block_str and hl_group not in already_matched:
                     md_str = md_str.replace(
-                        hl_group_str, f"<mark>{hl_group_str}</mark>"
+                        hl_group_str, 
+                        f"{mark_open}{hl_group_str}{mark_close}"
                     )
                     has_highlight = True
                     already_matched.append(hl_group)
 
             # TODO: Are these quick fixes for consecutive mark still necessary?
             if has_highlight:
-                md_str = md_str.replace("</mark>\n<mark>", " ")
-                md_str = md_str.replace("</mark> <mark>", " ")
+                md_str = md_str.replace(f"{mark_close}\n{mark_open}", " ")
+                md_str = md_str.replace(f"{mark_close} {mark_open}", " ")
                 md_blocks_with_marks.append(md_str)
 
         # In case any `hl_group_str` is not contained in any text_block_str,
@@ -281,7 +287,7 @@ def prepare_md_from_hl_groups(
             for hl_group in hl_word_groups:
                 if hl_group not in already_matched:
                     hl_group_str = " ".join(hl_group)
-                    md_str = f"<mark>{hl_group_str}</mark>"
+                    md_str = f"{mark_open}{hl_group_str}{mark_close}"
                     md_blocks_with_marks.append(md_str)
 
         # print("md_blocks_with_marks:", md_blocks_with_marks)
