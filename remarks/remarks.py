@@ -435,7 +435,7 @@ def process_document(
     out_doc_path_base = os.path.splitext(f"{out_path.parent}/{out_path.name}")[0]
 
     if combined_pdf:
-        pdf_src.save(f"{out_doc_path_base} _remarks.pdf")
+        pdf_src.save(f"{out_doc_path_base}_remarks.pdf")
 
     if modified_pdf and (doc_type == "notebook" and combined_pdf):
         logging.info(
@@ -448,7 +448,7 @@ def process_document(
         )
         # print("pages_order:", pages_order)
         mod_pdf.select(pages_order)
-        mod_pdf.save(f"{out_doc_path_base} _remarks-only.pdf")
+        mod_pdf.save(f"{out_doc_path_base}_remarks-only.pdf")
         mod_pdf.close()
 
     if combined_md and len(combined_md_strs) > 0:
