@@ -357,7 +357,7 @@ def process_document(
         if "highlights" in ann_type and has_smart_hl:
             smart_hl_data = load_json_file(hl_json_file)
             print(smart_hl_data)
-            # TODO -- Try search based on rectangles to break up words glued together at line-breaks
+            # TODO -- Try search based on rectangles to break up words glued together at line-breaks. Might need to use heuristics based on string distance between searched and "smart" highlights.
             # TODO -- Make the drawn highlight color a little more pleasant
             ann_page = add_smart_highlight_annotations(smart_hl_data, ann_page, scale)
             smart_hl_groups = extract_groups_from_smart_hl(smart_hl_data)
