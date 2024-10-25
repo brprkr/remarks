@@ -333,15 +333,19 @@ def process_document(
 
         # TODO: add ability to extract highlighted images / tables (via pixmaps)?
 
-        ann_hl_groups = []
+        # Logging annotation highlights, but not including them in markdown, as 
+        # (for me) these are often stray marks made while attempting smart highlights.
         if (
             "highlights" in ann_type
             and has_ann_hl
             and (is_text_extractable or is_ocred)
         ):
-            ann_hl_groups = extract_groups_from_pdf_ann_hl(
+            _ann_hl_groups = extract_groups_from_pdf_ann_hl(
                 ann_page,
                 malformed=assume_malformed_pdfs,
+            )
+            logging.info(
+                f"Found annotation highlights on page #{page_idx + 1}. These will not be included in highlights document: \n\t#{_ann_hl_groups}"
             )
         elif "highlights" in ann_type and has_ann_hl and doc_type == "pdf":
             logging.info(
@@ -349,6 +353,7 @@ def process_document(
             )
 
         smart_hl_groups = []
+
         if "highlights" in ann_type and has_smart_hl:
             smart_hl_data = load_json_file(hl_json_file)
             # print("smart_hl_data", smart_hl_data)
@@ -356,10 +361,10 @@ def process_document(
             smart_hl_groups = extract_groups_from_smart_hl(smart_hl_data)
 
         hl_text = ""
-        if len(ann_hl_groups + smart_hl_groups) > 0:
+        if len(smart_hl_groups) > 0:
             hl_text = prepare_md_from_hl_groups(
                 ann_page,
-                ann_hl_groups,
+                [],
                 smart_hl_groups,
                 obsidian_format=md_obsidian_format,
                 presentation=md_hl_format,
