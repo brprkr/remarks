@@ -121,7 +121,7 @@ def process_document(
     combined_md=False,
     assume_malformed_pdfs=False,
     avoid_ocr=False,
-    md_hl_format="whole_block",
+    md_hl_format="bullet_points",
     md_hl_output_dir=None,
     md_obsidian_format=True,
     md_page_offset=0,
@@ -356,7 +356,9 @@ def process_document(
 
         if "highlights" in ann_type and has_smart_hl:
             smart_hl_data = load_json_file(hl_json_file)
-            # print("smart_hl_data", smart_hl_data)
+            print(smart_hl_data)
+            # TODO -- Try search based on rectangles to break up words glued together at line-breaks
+            # TODO -- Make the drawn highlight color a little more pleasant
             ann_page = add_smart_highlight_annotations(smart_hl_data, ann_page, scale)
             smart_hl_groups = extract_groups_from_smart_hl(smart_hl_data)
 

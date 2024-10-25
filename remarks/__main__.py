@@ -66,8 +66,8 @@ def main():
     )
     parser.add_argument(
         "--md_hl_format",
-        help="Choose how highlighted text should be written in Markdown. Options are: bullet_points or whole_block. Defaults to whole_block",
-        default="whole_block",
+        help="Choose how highlighted text should be written in Markdown. Options are: bullet_points or whole_block. Defaults to bullet_points",
+        default="bullet_points",
         metavar="HIGHLIGHTS_FORMAT",
     )
     parser.add_argument(
