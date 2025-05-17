@@ -39,7 +39,7 @@ def get_ui_path(path):
     # Check the parent
     ui_path = pathlib.Path("")
 
-    while parent_filename != "":
+    while parent_filename != "" and parent_filename != None:
         # First get the total path of the parent
         parent_path = pathlib.Path(path.parent, metadata["parent"])
 
